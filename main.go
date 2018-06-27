@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"strconv"
@@ -14,52 +12,38 @@ import (
 )
 
 var (
+	log      = getLogger()
 	prefixes []string
 )
-
-type Config struct {
-	Token  string `json: "token"`
-	Prefix string `json: "prefix"`
-}
-
-// TODO: move to separate file
-func readConfig() (Config, error) {
-	var c Config
-
-	raw, err := ioutil.ReadFile("./config.json")
-	if err == nil {
-		err = json.Unmarshal(raw, &c)
-		if err == nil {
-			return c, err
-		}
-	}
-	return c, err
-}
 
 func main() {
 	config, err := readConfig()
 	if err != nil {
-		fmt.Println("Fatal: failed to read config file. Exiting")
+		log.Fatal("Failed to read config file")
 		os.Exit(1)
 	}
 
+	log.LoggingLevel = config.LoggingLevel
+
+	log.Trace("Creating session")
 	dg, err := discordgo.New("Bot " + config.Token)
 	if err != nil {
-		fmt.Println("Fatal: creating Discord session,", err)
+		log.Fatal("Failed to create Discord session,", err)
 		return
 	}
 
-	err = dg.Open()
-	if err != nil {
-		fmt.Println("Fatal: opening connection,", err)
+	log.Trace("Openning connection")
+	if err = dg.Open(); err != nil {
+		log.Fatal("Failed to open connection,", err)
 		return
 	}
 
 	prefixes = append(prefixes, config.Prefix, "<@"+dg.State.User.ID+">", "<@!"+dg.State.User.ID+">")
 
+	log.Trace("Registering events")
 	dg.AddHandler(messageCreate)
 
-	fmt.Println("Info: Bot is ready") // TODO: logger
+	log.Info("Info: Bot is ready")
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
@@ -92,7 +76,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if prefix == "" {
 		channel, err := s.State.Channel(m.ChannelID)
 		if err != nil {
-			fmt.Println("Channel with id %d not found", m.ChannelID)
+			log.Debug("Channel with id %d not found", m.ChannelID)
 			return
 		}
 		if channel.Type != discordgo.ChannelTypeDM { // empty prefix is  allowed for direct messages
@@ -107,7 +91,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// TODO: command handler
 	// TODO: response registration using redis
-	switch strings.ToLower(strings.ToLower(args[0])) {
+	command := strings.ToLower(strings.ToLower(args[0]))
+	log.Trace("called command %s", command)
+
+	switch command {
 	case "help":
 		s.ChannelMessageSend(m.ChannelID, "help, ping, uptime, user")
 	case "ping":
@@ -126,7 +113,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 
-		delta := id2>>22 - id1>>22 // TODO: use timestamps
+		delta := id2>>22 - id1>>22
 
 		s.ChannelMessageEdit(m.ChannelID, pingMessage.ID, fmt.Sprintf("Pong, it took **%dms** to respond", delta))
 	case "uptime":
