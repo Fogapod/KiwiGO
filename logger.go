@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"time"
+	"strings"
 )
 
 // TODO: LoggingLevel constants?
@@ -16,30 +17,35 @@ func getLogger() *logger {
 
 // TODO: write to stdout instead of using Println
 // TODO: write to file (optional?)
-// TODO: escape ANSII codes
 // TODO: better formatting for trailing unused arguments
-func (l logger) write(level int, prefix, msg string, args ...interface{}) {
+func (l logger) write(level int, prefix, postfix, msg string, args ...interface{}) {
 	if level > l.LoggingLevel {
 		return
 	}
 
 	now := time.Now().In(time.UTC)
-	fmt.Println(fmt.Sprintf(prefix+now.Format(" 01-02 15:04:05 UTC ")+msg, args...))
+
+	text := ""
+
+	for _, line := range strings.Split(msg, "\n") {
+		text += prefix+now.Format(" 01-02 15:04:05 UTC ") + line+postfix + "\n"
+	}
+
+	fmt.Printf(fmt.Sprintf(text, args...))
 }
 
-// TODO terminal colours
 func (l logger) Fatal(msg string, args ...interface{}) {
-	l.write(0, "[  !  ]", msg, args...)
+	l.write(0, "\u001b[31m[  !  ]", "\u001b[0m", msg, args...)
 }
 
 func (l logger) Info(msg string, args ...interface{}) {
-	l.write(1, "[ INF ]", msg, args...)
+	l.write(1, "\u001b[32m[ INF ]", "\u001b[0m", msg, args...)
 }
 
 func (l logger) Debug(msg string, args ...interface{}) {
-	l.write(2, "[DEBUG]", msg, args...)
+	l.write(2, "\u001b[33m[DEBUG]", "\u001b[0m", msg, args...)
 }
 
 func (l logger) Trace(msg string, args ...interface{}) {
-	l.write(3, "[TRACE]", msg, args...)
+	l.write(3, "[TRACE]", "", msg, args...)
 }
