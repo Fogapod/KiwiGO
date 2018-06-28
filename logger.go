@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"time"
 	"strings"
+	"time"
 )
 
 // TODO: LoggingLevel constants?
@@ -24,14 +24,16 @@ func (l logger) write(level int, prefix, postfix, msg string, args ...interface{
 	}
 
 	now := time.Now().In(time.UTC)
+	nowFormatted := now.Format(" 01-02 15:04:05 UTC ")
 
+	msgFormatted := fmt.Sprintf(msg, args...)
 	text := ""
 
-	for _, line := range strings.Split(msg, "\n") {
-		text += prefix+now.Format(" 01-02 15:04:05 UTC ") + line+postfix + "\n"
+	for _, line := range strings.Split(msgFormatted, "\n") {
+		text += prefix + nowFormatted + line + postfix + "\n"
 	}
 
-	fmt.Printf(fmt.Sprintf(text, args...))
+	fmt.Print(text)
 }
 
 func (l logger) Fatal(msg string, args ...interface{}) {

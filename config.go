@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 )
 
 type Config struct {
@@ -14,12 +14,32 @@ type Config struct {
 func readConfig() (Config, error) {
 	var c Config
 
-	raw, err := ioutil.ReadFile("./config.json")
-	if err == nil {
-		if err = json.Unmarshal(raw, &c); err == nil {
-			return c, err
-		}
+	f, err := os.OpenFile("config.json", os.O_RDWR, 0666)
+	defer f.Close()
+
+	if err != nil {
+		return c, err
 	}
+
+	b := make([]byte, 1024)
+	var bytesRead int
+
+	bytesRead, err = f.Read(b)
+
+	if err != nil {
+		return c, err
+	}
+
+	if err = json.Unmarshal(b[:bytesRead], &c); err != nil {
+		return c, err
+	}
+
+	if b, err = json.MarshalIndent(c, "", "    "); err != nil {
+		return c, err
+	}
+
+	f.Seek(0, 0)
+	_, err = f.Write(b)
 
 	return c, err
 }

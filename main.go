@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	config   Config
 	log      = getLogger()
 	prefixes []string
 )
@@ -19,7 +20,7 @@ var (
 func main() {
 	config, err := readConfig()
 	if err != nil {
-		log.Fatal("Failed to read config file, error: \n%s", err)
+		log.Fatal("Failed to read config file, error:\n%s", err)
 		os.Exit(1)
 	}
 
@@ -28,13 +29,13 @@ func main() {
 	log.Trace("Creating session")
 	dg, err := discordgo.New("Bot " + config.Token)
 	if err != nil {
-		log.Fatal("Failed to create Discord session, error: \n%s", err)
+		log.Fatal("Failed to create Discord session, error:\n%s", err)
 		return
 	}
 
 	log.Trace("Openning connection")
 	if err = dg.Open(); err != nil {
-		log.Fatal("Failed to open connection, error: \n%s", err)
+		log.Fatal("Failed to open connection, error:\n%s", err)
 		return
 	}
 
