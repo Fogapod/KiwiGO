@@ -12,6 +12,8 @@ type Config struct {
 }
 
 func readConfig() (Config, error) {
+	// Reads config file and updates it to match Config struct
+
 	var c Config
 
 	f, err := os.OpenFile("config.json", os.O_RDWR, 0666)

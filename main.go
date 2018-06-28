@@ -12,45 +12,55 @@ import (
 )
 
 var (
-	config   Config
-	log      = getLogger()
-	prefixes []string
+	config    Config
+	log       = getLogger()
+	prefixes  []string
+	dgSession *discordgo.Session
 )
 
 func main() {
 	config, err := readConfig()
 	if err != nil {
 		log.Fatal("Failed to read config file, error:\n%s", err)
-		os.Exit(1)
+		stopBot(1, true)
 	}
 
 	log.LoggingLevel = config.LoggingLevel
 
 	log.Trace("Creating session")
-	dg, err := discordgo.New("Bot " + config.Token)
+	dgSession, err = discordgo.New("Bot " + config.Token)
 	if err != nil {
 		log.Fatal("Failed to create Discord session, error:\n%s", err)
-		return
+		stopBot(1, true)
 	}
 
 	log.Trace("Openning connection")
-	if err = dg.Open(); err != nil {
+	if err = dgSession.Open(); err != nil {
 		log.Fatal("Failed to open connection, error:\n%s", err)
-		return
+		stopBot(1, true)
 	}
 
-	prefixes = append(prefixes, config.Prefix, "<@"+dg.State.User.ID+">", "<@!"+dg.State.User.ID+">")
+	prefixes = append(prefixes, config.Prefix, "<@"+dgSession.State.User.ID+">", "<@!"+dgSession.State.User.ID+">")
 
 	log.Trace("Registering events")
-	dg.AddHandler(messageCreate)
+	dgSession.AddHandler(messageCreate)
 
-	log.Info("Info: Bot is ready")
+	log.Info("Bot is ready")
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
 
-	dg.Close()
+	stopBot(0, false)
+}
+
+func stopBot(exitCode int, forceStop bool) {
+	log.Info("Closing connection and exiting with code %d", exitCode)
+
+	if !forceStop {
+		dgSession.Close()
+	}
+	os.Exit(exitCode)
 }
 
 func checkPrefixes(content string) string {
@@ -74,13 +84,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	prefix := checkPrefixes(m.Content)
 
+	isDM := m.GuildID == ""
+
 	if prefix == "" {
-		channel, err := s.State.Channel(m.ChannelID)
-		if err != nil {
-			log.Debug("Channel with id %d not found", m.ChannelID)
-			return
-		}
-		if channel.Type != discordgo.ChannelTypeDM { // empty prefix is  allowed for direct messages
+		if !isDM { // empty prefix is  allowed for direct messages
 			return
 		}
 	}
@@ -93,7 +100,17 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// TODO: command handler
 	// TODO: response registration using redis
 	command := strings.ToLower(strings.ToLower(args[0]))
-	log.Trace("called command %s", command)
+
+	var commandUseLocation string
+
+	if isDM {
+		commandUseLocation = "DM"
+	} else {
+		commandUseLocation = m.GuildID
+	}
+
+	// temporary, command handler needed, dispatching commandUse event after checks
+	log.Trace("%s in %s -> %s", m.Author.ID, commandUseLocation, command)
 
 	switch command {
 	case "help":
