@@ -11,7 +11,7 @@ type Config struct {
 	LoggingLevel int    `json:"logging_level"`
 }
 
-func readConfig() (Config, error) {
+func readConfig() (*Config, error) {
 	// Reads config file and updates it to match Config struct
 
 	var c Config
@@ -20,7 +20,7 @@ func readConfig() (Config, error) {
 	defer f.Close()
 
 	if err != nil {
-		return c, err
+		return &c, err
 	}
 
 	b := make([]byte, 1024)
@@ -29,19 +29,19 @@ func readConfig() (Config, error) {
 	bytesRead, err = f.Read(b)
 
 	if err != nil {
-		return c, err
+		return &c, err
 	}
 
 	if err = json.Unmarshal(b[:bytesRead], &c); err != nil {
-		return c, err
+		return &c, err
 	}
 
 	if b, err = json.MarshalIndent(c, "", "    "); err != nil {
-		return c, err
+		return &c, err
 	}
 
 	f.Seek(0, 0)
 	_, err = f.Write(b)
 
-	return c, err
+	return &c, err
 }
