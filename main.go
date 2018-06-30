@@ -5,44 +5,48 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Fogapod/KiwiGO/bot"
+	"github.com/Fogapod/KiwiGO/logger"
 	"github.com/bwmarrin/discordgo"
 )
 
 var (
-	log = getLogger()
+	log = logger.GetLogger()
 )
 
 func main() {
-	bot := Bot{}
+	bot := bot.Bot{}
 	handler := CommandHandler{&bot}
+
+	bot.Logger = log
 
 	var err error
 
-	bot.Config, err = readConfig()
+	config, err := readConfig()
 	if err != nil {
 		log.Fatal("Failed to read config file, error:\n%s", err)
 		bot.Stop(1, true)
 	}
 
-	log.LoggingLevel = bot.Config.LoggingLevel
+	log.LoggingLevel = config.LoggingLevel
 
 	log.Trace("Creating session")
-	bot.dgSession, err = discordgo.New("Bot " + bot.Config.Token)
+	bot.Session, err = discordgo.New("Bot " + config.Token)
 	if err != nil {
 		log.Fatal("Failed to create Discord session, error:\n%s", err)
 		bot.Stop(1, true)
 	}
 
 	log.Trace("Openning connection")
-	if err = bot.dgSession.Open(); err != nil {
+	if err = bot.Session.Open(); err != nil {
 		log.Fatal("Failed to open connection, error:\n%s", err)
 		bot.Stop(1, true)
 	}
 
 	log.Trace("Registering events")
-	bot.dgSession.AddHandler(handler.messageCreate)
+	bot.Session.AddHandler(handler.messageCreate)
 
-	bot.InitPrefixes()
+	bot.InitPrefixes(config.Prefix)
 
 	log.Info("Bot is ready")
 

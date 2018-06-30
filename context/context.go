@@ -1,18 +1,20 @@
-package main
+package context
 
 import (
+	"github.com/Fogapod/KiwiGO/bot"
+	"github.com/Fogapod/KiwiGO/command"
 	"github.com/bwmarrin/discordgo"
 )
 
 type Context struct {
-	Bot               *Bot
+	Bot               *bot.Bot
 	Message           *discordgo.Message
 	Channel           *discordgo.Channel
 	Guild             *discordgo.Guild
 	Author            *discordgo.User
 	Prefix            string
 	RegisterResponses bool
-	Commands          []*Command
+	Commands          []*command.Command
 }
 
 // experimental, arguments may change
@@ -21,7 +23,7 @@ func (ctx *Context) Send(channelID, content string) (*discordgo.Message, error) 
 	if ctx.RegisterResponses {
 		// register with redis
 	}
-	return ctx.Bot.dgSession.ChannelMessageSend(channelID, content)
+	return ctx.Bot.Session.ChannelMessageSend(channelID, content)
 }
 
 // experimental, arguments may change
@@ -33,31 +35,31 @@ func (ctx *Context) React(emoji string) (*discordgo.MessageReaction, error) {
 	return nil, nil
 }
 
-func MakeContext(bot *Bot, msg *discordgo.Message, prefix string) (*Context, error) {
-	channel, err := bot.dgSession.State.Channel(msg.ChannelID)
+func MakeContext(b *bot.Bot, msg *discordgo.Message, prefix string) (*Context, error) {
+	channel, err := b.Session.State.Channel(msg.ChannelID)
 	if err != nil {
-		log.Debug("Channel with id %d not found", msg.ChannelID)
+		b.Logger.Debug("Channel with id %d not found", msg.ChannelID)
 		return nil, err
 	}
 
 	var guild *discordgo.Guild
 
 	if msg.GuildID != "" {
-		guild, err = bot.dgSession.State.Guild(msg.GuildID)
+		guild, err = b.Session.State.Guild(msg.GuildID)
 		if err != nil {
-			log.Debug("Guild with id %d not found", msg.ChannelID)
+			b.Logger.Debug("Guild with id %d not found", msg.ChannelID)
 			return nil, err
 		}
 	}
 
 	return &Context{
-		bot,
+		b,
 		msg,
 		channel,
 		guild,
 		msg.Author,
 		prefix,
 		true,
-		[]*Command{},
+		[]*command.Command{},
 	}, nil
 }

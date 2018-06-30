@@ -5,11 +5,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Fogapod/KiwiGO/bot"
+	"github.com/Fogapod/KiwiGO/context"
 	"github.com/bwmarrin/discordgo"
 )
 
 type CommandHandler struct {
-	Bot *Bot
+	Bot *bot.Bot
 }
 
 func (h *CommandHandler) getPrefix(content string) string {
@@ -61,7 +63,7 @@ func (h *CommandHandler) messageCreate(s *discordgo.Session, m *discordgo.Messag
 	// temporary, command handler needed, dispatching commandUse event after checks
 	log.Trace("%s in %s -> %s", m.Author.ID, commandUseLocation, command)
 
-	ctx, err := MakeContext(h.Bot, m.Message, prefix)
+	ctx, err := context.MakeContext(h.Bot, m.Message, prefix)
 	if err != nil {
 		log.Debug("Failed to create context")
 		return
