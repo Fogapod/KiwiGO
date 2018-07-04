@@ -20,7 +20,7 @@ func readConfig() (*Config, error) {
 	defer f.Close()
 
 	if err != nil {
-		return &c, err
+		return nil, err
 	}
 
 	b := make([]byte, 1024)
@@ -29,15 +29,15 @@ func readConfig() (*Config, error) {
 	bytesRead, err = f.Read(b)
 
 	if err != nil {
-		return &c, err
+		return nil, err
 	}
 
 	if err = json.Unmarshal(b[:bytesRead], &c); err != nil {
-		return &c, err
+		return nil, err
 	}
 
 	if b, err = json.MarshalIndent(c, "", "    "); err != nil {
-		return &c, err
+		return nil, err
 	}
 
 	f.Seek(0, 0)

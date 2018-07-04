@@ -37,6 +37,8 @@ func main() {
 		bot.Stop(1, true)
 	}
 
+	bot.Session.AddHandlerOnce(handler.Ready)
+
 	log.Trace("Openning connection")
 	if err = bot.Session.Open(); err != nil {
 		log.Fatal("Failed to open connection, error:\n%s", err)
@@ -47,8 +49,6 @@ func main() {
 	bot.Session.AddHandler(handler.messageCreate)
 
 	bot.InitPrefixes(config.Prefix)
-
-	log.Info("Bot is ready")
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)

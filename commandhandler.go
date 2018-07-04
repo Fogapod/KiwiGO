@@ -28,6 +28,10 @@ func (h *CommandHandler) getPrefix(content string) string {
 	return ""
 }
 
+func (h *CommandHandler) Ready(s *discordgo.Session, r *discordgo.Ready) {
+	h.Bot.Logger.Info("Bot is ready to serve %d guilds", len(h.Bot.Session.State.Guilds))
+}
+
 func (h *CommandHandler) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.Bot {
 		return

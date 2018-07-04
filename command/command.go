@@ -1,5 +1,13 @@
 package command
 
+type AllowedChatType int
+
+const (
+	All AllowedChatType = iota
+	GuildOnly
+	DMOnly
+)
+
 type Command struct {
 	usage_doc string
 	short_doc string
@@ -12,10 +20,10 @@ type Command struct {
 	// user_perms []*Permission
 	min_args int
 	// flags      []*FlagOptions
-	guild_only bool
-	nsfw       bool
-	hidden     bool
-	disabled   bool
+	AllowedChatType AllowedChatType
+	nsfw            bool
+	hidden          bool
+	disabled        bool
 	// events     ???
 }
 
@@ -28,11 +36,10 @@ type SubCommand struct {
 	aliases []string
 	// bot_perms  []*Permission
 	// user_perms []*Permission
-	min_args   int
-	guild_only bool
-	nsfw       bool
-	hidden     bool
-	disabled   bool
+	min_args int
+	nsfw     bool
+	hidden   bool
+	disabled bool
 }
 
 // TODO: check funcs
