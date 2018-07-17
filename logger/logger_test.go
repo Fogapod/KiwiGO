@@ -56,14 +56,15 @@ func TestSetLoggingLevel(t *testing.T) {
 		t.Fatalf("Logging level does not match requested (%d instead of %d)", l.LoggingLevel, requiredLoggingLevel)
 	}
 
-	for i, s := range []string{"wrong value", "trace", "debug", "info", "fatal"} {
+	err = l.SetLoggingLevel("invalid value")
+	if err == nil {
+		t.Fatal("Invalid data passed to SetLoggingLevel, but no error was returned")
+	}
+
+	for _, s := range []string{"Trace", "DEBUG", " info ", "fatal"} {
 		err = l.SetLoggingLevel(s)
 
-		if i == 0 {
-			if err == nil {
-				t.Fatal("Invalid data passed to SetLoggingLevel, but no error was returned")
-			}
-		} else if err != nil {
+		if err != nil {
 			t.Fatalf("Failed to set logging level using key %s:\n%s", s, err)
 		}
 	}

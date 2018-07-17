@@ -85,7 +85,7 @@ func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.Messag
 
 	ctx, err := context.MakeContext(h.Bot, m.Message, prefix)
 	if err != nil {
-		h.Bot.Logger.Debug("Failed to create context")
+		log.Debug("Failed to create context")
 		return
 	}
 
