@@ -6,6 +6,7 @@ import (
 	"syscall"
 
 	"github.com/Fogapod/KiwiGO/bot"
+	"github.com/Fogapod/KiwiGO/commandhandler"
 	"github.com/Fogapod/KiwiGO/logger"
 	"github.com/bwmarrin/discordgo"
 )
@@ -16,7 +17,7 @@ var (
 
 func main() {
 	bot := bot.Bot{}
-	handler := CommandHandler{&bot}
+	handler := commandhandler.NewCommandHandler(&bot)
 
 	bot.Logger = log
 
@@ -28,8 +29,13 @@ func main() {
 		bot.Stop(1, true)
 	}
 
-	log.LoggingLevel = config.LoggingLevel
+	err = log.SetLoggingLevel(config.LoggingLevel)
+	if err != nil {
+		log.Fatal("Failed to set logging level, error:\n%s", err)
+		bot.Stop(1, true)
+	}
 
+	log.Info("Initializing bot")
 	log.Trace("Creating session")
 	bot.Session, err = discordgo.New("Bot " + config.Token)
 	if err != nil {
@@ -46,7 +52,7 @@ func main() {
 	}
 
 	log.Trace("Registering events")
-	bot.Session.AddHandler(handler.messageCreate)
+	bot.Session.AddHandler(handler.HandleMessage)
 
 	bot.InitPrefixes(config.Prefix)
 

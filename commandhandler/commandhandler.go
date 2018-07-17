@@ -1,4 +1,4 @@
-package main
+package commandhandler
 
 import (
 	"fmt"
@@ -6,12 +6,23 @@ import (
 	"strings"
 
 	"github.com/Fogapod/KiwiGO/bot"
+	"github.com/Fogapod/KiwiGO/command"
 	"github.com/Fogapod/KiwiGO/context"
+	"github.com/Fogapod/KiwiGO/logger"
 	"github.com/bwmarrin/discordgo"
 )
 
+var (
+	log = logger.GetLogger()
+)
+
 type CommandHandler struct {
-	Bot *bot.Bot
+	Bot      *bot.Bot
+	commands map[string]*command.Command
+}
+
+func NewCommandHandler(b *bot.Bot) CommandHandler {
+	return CommandHandler{b, map[string]*command.Command{}}
 }
 
 func (h *CommandHandler) getPrefix(content string) string {
@@ -29,10 +40,10 @@ func (h *CommandHandler) getPrefix(content string) string {
 }
 
 func (h *CommandHandler) Ready(s *discordgo.Session, r *discordgo.Ready) {
-	h.Bot.Logger.Info("Bot is ready to serve %d guilds", len(h.Bot.Session.State.Guilds))
+	log.Info("Bot is ready to serve %d guilds", len(h.Bot.Session.State.Guilds))
 }
 
-func (h *CommandHandler) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.Bot {
 		return
 	}
@@ -52,9 +63,14 @@ func (h *CommandHandler) messageCreate(s *discordgo.Session, m *discordgo.Messag
 	// TODO: argument parser, flag parser
 	args := strings.Fields(m.Content[len(prefix):])
 
+	if len(args) == 0 {
+		return
+	}
+
 	// TODO: actual handler
 	// TODO: response registration using redis
-	command := strings.ToLower(strings.ToLower(args[0]))
+	// command := h.commands[strings.ToLower(args[0])]
+	command := strings.ToLower(args[0])
 
 	var commandUseLocation string
 
@@ -69,10 +85,11 @@ func (h *CommandHandler) messageCreate(s *discordgo.Session, m *discordgo.Messag
 
 	ctx, err := context.MakeContext(h.Bot, m.Message, prefix)
 	if err != nil {
-		log.Debug("Failed to create context")
+		h.Bot.Logger.Debug("Failed to create context")
 		return
 	}
 
+	// switch command.Name {
 	switch command {
 	case "help":
 		ctx.Send(m.ChannelID, "Commands: help, ping, uptime, user\nPrefix: **"+h.Bot.DefaultPrefixes[0]+"**")

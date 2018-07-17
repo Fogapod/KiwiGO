@@ -8,7 +8,7 @@ import (
 type Config struct {
 	Token        string `json:"token"`
 	Prefix       string `json:"prefix"`
-	LoggingLevel int    `json:"logging_level"`
+	LoggingLevel string `json:"logging_level"`
 }
 
 func readConfig() (*Config, error) {
