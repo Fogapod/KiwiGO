@@ -43,7 +43,7 @@ func (h *CommandHandler) getPrefix(content string) string {
 func (h *CommandHandler) HandleReady(s *discordgo.Session, r *discordgo.Ready) {
 	log.Info("%s is ready to serve %d guilds", s.State.User, len(s.State.Guilds))
 
-	if len(h.Bot.DefaultPrefixes) != 0 {
+	if len(h.Bot.DefaultPrefixes) == 0 {
 		log.Warn("Bot is ready, but prefix list is empty")
 	} else {
 		log.Info("Default prefix: %s", h.Bot.DefaultPrefixes[0])
