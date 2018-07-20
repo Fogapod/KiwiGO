@@ -3,6 +3,7 @@ package logger
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -13,8 +14,10 @@ var (
 
 const (
 	FatalLevel = iota
-	DebugLevel
+	ErrorLevel
+	WarnLevel
 	InfoLevel
+	DebugLevel
 	TraceLevel
 )
 
@@ -53,9 +56,17 @@ func parseLoggingLevel(input interface{}) (int, error) {
 		return value, nil
 	case string:
 		value, _ := input.(string)
+		if number, err := strconv.Atoi(value); err == nil {
+			return number, nil
+		}
+
 		switch strings.ToLower(strings.TrimSpace(value)) {
 		case "fatal":
 			return FatalLevel, nil
+		case "error":
+			return ErrorLevel, nil
+		case "warning":
+			return WarnLevel, nil
 		case "info":
 			return InfoLevel, nil
 		case "debug":
@@ -74,7 +85,7 @@ func GetLogger() *Logger {
 	return log
 }
 
-// TODO: write to stdout instead of using Println
+// TODO: write to stdout instead of using Print
 // TODO: write to file (optional?)
 // TODO: better formatting for trailing unused arguments
 func (l Logger) write(level int, prefix, postfix, msg string, args ...interface{}) {
@@ -95,18 +106,27 @@ func (l Logger) write(level int, prefix, postfix, msg string, args ...interface{
 	fmt.Print(text)
 }
 
+// TODO: make colours optional
 func (l Logger) Fatal(msg string, args ...interface{}) {
-	l.write(0, "\u001b[31m[  !  ]", "\u001b[0m", msg, args...)
+	l.write(FatalLevel, "\u001b[31m[  !  ]", "\u001b[0m", msg, args...)
+}
+
+func (l Logger) Error(msg string, args ...interface{}) {
+	l.write(ErrorLevel, "\u001b[31m[ ERR ]", "\u001b[0m", msg, args...)
+}
+
+func (l Logger) Warn(msg string, args ...interface{}) {
+	l.write(WarnLevel, "\u001b[31;1m[ WRN ]", "\u001b[0m", msg, args...)
 }
 
 func (l Logger) Info(msg string, args ...interface{}) {
-	l.write(1, "\u001b[32m[ INF ]", "\u001b[0m", msg, args...)
+	l.write(InfoLevel, "\u001b[32m[ INF ]", "\u001b[0m", msg, args...)
 }
 
 func (l Logger) Debug(msg string, args ...interface{}) {
-	l.write(2, "\u001b[33m[DEBUG]", "\u001b[0m", msg, args...)
+	l.write(DebugLevel, "\u001b[33m[DEBUG]", "\u001b[0m", msg, args...)
 }
 
 func (l Logger) Trace(msg string, args ...interface{}) {
-	l.write(3, "[TRACE]", "", msg, args...)
+	l.write(TraceLevel, "[TRACE]", "", msg, args...)
 }

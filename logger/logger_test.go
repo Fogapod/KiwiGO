@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"strconv"
 	"testing"
 )
 
@@ -31,10 +32,11 @@ func TestGetLogger(t *testing.T) {
 }
 
 func TestSetLoggingLevel(t *testing.T) {
-	l, _ := NewLogger(TraceLevel)
-
 	requiredLoggingLevel := DebugLevel
 	requiredLoggingLevelString := "Debug"
+
+	// test with int
+	l, _ := NewLogger(TraceLevel)
 
 	err := l.SetLoggingLevel(requiredLoggingLevel)
 	if err != nil {
@@ -45,6 +47,7 @@ func TestSetLoggingLevel(t *testing.T) {
 		t.Fatalf("Logging level does not match requested (%d instead of %d)", l.LoggingLevel, requiredLoggingLevel)
 	}
 
+	// test with string
 	l, _ = NewLogger(TraceLevel)
 
 	err = l.SetLoggingLevel(requiredLoggingLevelString)
@@ -56,12 +59,26 @@ func TestSetLoggingLevel(t *testing.T) {
 		t.Fatalf("Logging level does not match requested (%d instead of %d)", l.LoggingLevel, requiredLoggingLevel)
 	}
 
+	// test with string (number)
+	l, _ = NewLogger(TraceLevel)
+
+	err = l.SetLoggingLevel(strconv.Itoa(requiredLoggingLevel))
+	if err != nil {
+		t.Fatalf("Failed to set logging level with string %d:\n%s", requiredLoggingLevel, err)
+	}
+
+	if l.LoggingLevel != requiredLoggingLevel {
+		t.Fatalf("Logging level does not match requested (%d instead of %d) (using string number)", l.LoggingLevel, requiredLoggingLevel)
+	}
+
+	// test with invalid string
 	err = l.SetLoggingLevel("invalid value")
 	if err == nil {
 		t.Fatal("Invalid data passed to SetLoggingLevel, but no error was returned")
 	}
 
-	for _, s := range []string{"Trace", "DEBUG", " info ", "fatal"} {
+	// test with strings
+	for _, s := range []string{"Trace", "DEBUG", " info ", "warning", "error", "fatal"} {
 		err = l.SetLoggingLevel(s)
 
 		if err != nil {
@@ -69,6 +86,7 @@ func TestSetLoggingLevel(t *testing.T) {
 		}
 	}
 
+	// test with invalid type
 	err = l.SetLoggingLevel(1.0)
 	if err == nil {
 		t.Fatal("Invalid type passed to SetLoggingLevel, but no error was returned")
@@ -78,14 +96,18 @@ func TestSetLoggingLevel(t *testing.T) {
 func TestLogMessages(t *testing.T) {
 	l, _ := NewLogger(TraceLevel)
 
-	l.Fatal("[1/4] You should see this message")
-	l.Info("[2/4] You should see this message")
-	l.Debug("[3/4] You should see this message")
-	l.Trace("[4/4] You should see this message")
+	l.Fatal("[1/6] You should see this message")
+	l.Error("[2/6] You should see this message")
+	l.Warn("[3/6] You should see this message")
+	l.Info("[4/6] You should see this message")
+	l.Debug("[5/6] You should see this message")
+	l.Trace("[6/6] You should see this message")
 
 	l.SetLoggingLevel(FatalLevel)
 
 	l.Fatal("[1/1] This should see this message")
+	l.Error("You should not see this message")
+	l.Warn("You should not see this message")
 	l.Info("You should not see this message")
 	l.Debug("You should not see this message")
 	l.Trace("You should not see this message")

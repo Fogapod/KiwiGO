@@ -2,20 +2,50 @@ package bot
 
 import (
 	"os"
+	"time"
 
 	"github.com/Fogapod/KiwiGO/logger"
 	"github.com/bwmarrin/discordgo"
 )
 
 type Bot struct {
-	Logger          *logger.Logger
-	Session         *discordgo.Session
-	DefaultPrefixes []string
-	GuildPrefixes   map[string]string // id:prefix
+	Logger            *logger.Logger
+	Session           *discordgo.Session
+	DefaultPrefixes   []string
+	GuildPrefixes     map[string]string                         // id:prefix
+	MessageTimestamps map[string]map[string]discordgo.Timestamp // channelID: userID: timestmp
+}
+
+func New() *Bot {
+	return &Bot{
+		GuildPrefixes:     make(map[string]string),
+		MessageTimestamps: make(map[string]map[string]discordgo.Timestamp),
+	}
 }
 
 func (bot *Bot) InitPrefixes(defaultPrefix string) {
 	bot.DefaultPrefixes = append(bot.DefaultPrefixes, defaultPrefix, "<@"+bot.Session.State.User.ID+">", "<@!"+bot.Session.State.User.ID+">")
+}
+
+func (bot *Bot) RegisterMessageTimestamp(m *discordgo.Message) {
+	if _, ok := bot.MessageTimestamps[m.ChannelID]; !ok {
+		bot.MessageTimestamps[m.ChannelID] = map[string]discordgo.Timestamp{m.Author.ID: m.Timestamp}
+	} else {
+		bot.MessageTimestamps[m.ChannelID][m.Author.ID] = m.Timestamp
+	}
+}
+
+func (bot *Bot) GetLatsUserMessageTimestamp(channelID, userID string) time.Time {
+	channel, ok := bot.MessageTimestamps[channelID]
+	if ok {
+		timestamp, ok := channel[userID]
+		if ok {
+			ts, _ := timestamp.Parse()
+			return ts
+		}
+	}
+
+	return time.Unix(0, 0)
 }
 
 func (b *Bot) GetAllChannels() []*discordgo.Channel {

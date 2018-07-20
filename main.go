@@ -16,10 +16,10 @@ var (
 )
 
 func main() {
-	bot := bot.Bot{}
-	handler := commandhandler.NewCommandHandler(&bot)
-
+	bot := bot.New()
 	bot.Logger = log
+
+	handler := commandhandler.NewCommandHandler(bot)
 
 	var err error
 
@@ -43,7 +43,7 @@ func main() {
 		bot.Stop(1, true)
 	}
 
-	bot.Session.AddHandlerOnce(handler.Ready)
+	bot.Session.AddHandlerOnce(handler.HandleReady)
 
 	log.Trace("Openning connection")
 	if err = bot.Session.Open(); err != nil {
@@ -51,10 +51,9 @@ func main() {
 		bot.Stop(1, true)
 	}
 
+	bot.InitPrefixes(config.Prefix)
 	log.Trace("Registering events")
 	bot.Session.AddHandler(handler.HandleMessage)
-
-	bot.InitPrefixes(config.Prefix)
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)

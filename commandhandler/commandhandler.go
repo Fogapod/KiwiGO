@@ -9,6 +9,7 @@ import (
 	"github.com/Fogapod/KiwiGO/command"
 	"github.com/Fogapod/KiwiGO/context"
 	"github.com/Fogapod/KiwiGO/logger"
+	"github.com/Fogapod/KiwiGO/utils/finders"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -39,11 +40,19 @@ func (h *CommandHandler) getPrefix(content string) string {
 	return ""
 }
 
-func (h *CommandHandler) Ready(s *discordgo.Session, r *discordgo.Ready) {
-	log.Info("Bot is ready to serve %d guilds", len(h.Bot.Session.State.Guilds))
+func (h *CommandHandler) HandleReady(s *discordgo.Session, r *discordgo.Ready) {
+	log.Info("%s is ready to serve %d guilds", s.State.User, len(s.State.Guilds))
+
+	if len(h.Bot.DefaultPrefixes) != 0 {
+		log.Warn("Bot is ready, but prefix list is empty")
+	} else {
+		log.Info("Default prefix: %s", h.Bot.DefaultPrefixes[0])
+	}
 }
 
 func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
+	h.Bot.RegisterMessageTimestamp(m.Message)
+
 	if m.Author.Bot {
 		return
 	}
@@ -81,9 +90,9 @@ func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.Messag
 	}
 
 	// temporary, command handler needed, dispatching commandUse event after checks
-	log.Trace("%s in %s -> %s", m.Author.ID, commandUseLocation, command)
+	log.Debug("%s in %s -> %s", m.Author.ID, commandUseLocation, command)
 
-	ctx, err := context.MakeContext(h.Bot, m.Message, prefix)
+	ctx, err := context.New(h.Bot, s, m.Message, prefix)
 	if err != nil {
 		log.Debug("Failed to create context")
 		return
@@ -115,8 +124,19 @@ func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.Messag
 	case "uptime":
 		ctx.Send(m.ChannelID, "Todo")
 	case "user":
-		// TODO: getUser
-		// TODO: other get functions (utilize?)
-		ctx.Send(m.ChannelID, "Todo")
+		var user *discordgo.User
+
+		if len(args) < 2 {
+			user = m.Author
+		} else {
+			users := finders.FindUser(strings.Join(args[1:], " "), ctx, &finders.FindUserOptions{})
+			if len(users) == 0 {
+				ctx.Send(m.ChannelID, "User not found")
+				return
+			}
+			user = users[0].User
+		}
+
+		ctx.Send(m.ChannelID, user.String())
 	}
 }

@@ -8,12 +8,13 @@ import (
 
 type Context struct {
 	Bot               *bot.Bot
+	Session           *discordgo.Session
 	Message           *discordgo.Message
 	Channel           *discordgo.Channel
 	Guild             *discordgo.Guild
 	Author            *discordgo.User
 	Prefix            string
-	RegisterResponses bool
+	RegisterResponses bool // delete?
 	Commands          []*command.Command
 }
 
@@ -35,7 +36,7 @@ func (ctx *Context) React(emoji string) (*discordgo.MessageReaction, error) {
 	return nil, nil
 }
 
-func MakeContext(b *bot.Bot, msg *discordgo.Message, prefix string) (*Context, error) {
+func New(b *bot.Bot, s *discordgo.Session, msg *discordgo.Message, prefix string) (*Context, error) {
 	channel, err := b.Session.State.Channel(msg.ChannelID)
 	if err != nil {
 		b.Logger.Debug("Channel with id %d not found", msg.ChannelID)
@@ -53,13 +54,14 @@ func MakeContext(b *bot.Bot, msg *discordgo.Message, prefix string) (*Context, e
 	}
 
 	return &Context{
-		b,
-		msg,
-		channel,
-		guild,
-		msg.Author,
-		prefix,
-		true,
-		[]*command.Command{},
+		Bot:               b,
+		Session:           s,
+		Message:           msg,
+		Channel:           channel,
+		Guild:             guild,
+		Author:            msg.Author,
+		Prefix:            prefix,
+		RegisterResponses: true,
+		Commands:          []*command.Command{},
 	}, nil
 }
