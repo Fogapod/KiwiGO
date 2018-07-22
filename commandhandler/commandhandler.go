@@ -1,15 +1,12 @@
 package commandhandler
 
 import (
-	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/Fogapod/KiwiGO/bot"
 	"github.com/Fogapod/KiwiGO/command"
 	"github.com/Fogapod/KiwiGO/context"
 	"github.com/Fogapod/KiwiGO/logger"
-	"github.com/Fogapod/KiwiGO/utils/finders"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -18,8 +15,8 @@ var (
 )
 
 type CommandHandler struct {
-	Bot      *bot.Bot
-	commands map[string]*command.Command
+	Bot        *bot.Bot
+	CommandMap map[string]*command.Command
 }
 
 func NewCommandHandler(b *bot.Bot) CommandHandler {
@@ -41,6 +38,9 @@ func (h *CommandHandler) getPrefix(content string) string {
 }
 
 func (h *CommandHandler) HandleReady(s *discordgo.Session, r *discordgo.Ready) {
+	log.Trace("Loading commands")
+	h.LoadCommands(true)
+
 	log.Info("%s is ready to serve %d guilds", s.State.User, len(s.State.Guilds))
 
 	if len(h.Bot.DefaultPrefixes) == 0 {
@@ -69,7 +69,18 @@ func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.Messag
 
 	// TODO: blacklist guild/user/(channel?)
 
+	ctx, err := context.New(h.Bot, s, m.Message, prefix)
+	if err != nil {
+		log.Warn("Failed to create context:\n%s", err)
+		return
+	}
+
 	// TODO: argument parser, flag parser
+	err = ctx.ParseContent(m.Content)
+	if err != nil {
+		log.Debug("Failed to parse arguments:\n%s", err)
+		return
+	}
 	args := strings.Fields(m.Content[len(prefix):])
 
 	if len(args) == 0 {
@@ -78,8 +89,10 @@ func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.Messag
 
 	// TODO: actual handler
 	// TODO: response registration using redis
-	// command := h.commands[strings.ToLower(args[0])]
-	command := strings.ToLower(args[0])
+	cmd, found := h.CommandMap[strings.ToLower(ctx.Arg(0))]
+	if !found {
+		return
+	}
 
 	var commandUseLocation string
 
@@ -89,54 +102,14 @@ func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.Messag
 		commandUseLocation = m.GuildID
 	}
 
-	// temporary, command handler needed, dispatching commandUse event after checks
-	log.Debug("%s in %s -> %s", m.Author.ID, commandUseLocation, command)
+	log.Debug("%s in %s -> %s", m.Author.ID, commandUseLocation, cmd.Name)
 
-	ctx, err := context.New(h.Bot, s, m.Message, prefix)
-	if err != nil {
-		log.Debug("Failed to create context")
-		return
+	response, err := cmd.Call(ctx)
+	if err != nil { // TODO: errors, error handler
+		log.Warn("Error running command %s:\n%s", cmd.Name, err)
 	}
 
-	// switch command.Name {
-	switch command {
-	case "help":
-		ctx.Send(m.ChannelID, "Commands: help, ping, uptime, user\nPrefix: **"+h.Bot.DefaultPrefixes[0]+"**")
-	case "ping":
-		pingMessage, err := ctx.Send(m.ChannelID, "Pinging...")
-		if err != nil {
-			return
-		}
-
-		id1, err := strconv.ParseInt(m.ID, 10, 64)
-		if err != nil {
-			return
-		}
-
-		id2, err := strconv.ParseInt(pingMessage.ID, 10, 64)
-		if err != nil {
-			return
-		}
-
-		delta := id2>>22 - id1>>22
-
-		s.ChannelMessageEdit(m.ChannelID, pingMessage.ID, fmt.Sprintf("Pong, it took **%dms** to respond", delta))
-	case "uptime":
-		ctx.Send(m.ChannelID, "Todo")
-	case "user":
-		var user *discordgo.User
-
-		if len(args) < 2 {
-			user = m.Author
-		} else {
-			users := finders.FindUser(strings.Join(args[1:], " "), ctx, &finders.FindUserOptions{})
-			if len(users) == 0 {
-				ctx.Send(m.ChannelID, "User not found")
-				return
-			}
-			user = users[0].User
-		}
-
-		ctx.Send(m.ChannelID, user.String())
+	if response != "" {
+		ctx.Send(m.ChannelID, response)
 	}
 }

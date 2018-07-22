@@ -1,8 +1,9 @@
 package context
 
 import (
+	"strings"
+
 	"github.com/Fogapod/KiwiGO/bot"
-	"github.com/Fogapod/KiwiGO/command"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -14,8 +15,10 @@ type Context struct {
 	Guild             *discordgo.Guild
 	Author            *discordgo.User
 	Prefix            string
-	RegisterResponses bool // delete?
-	Commands          []*command.Command
+	args              []string // TODO: separate arg type
+	separators        []string // TODO: separate arg type
+	RegisterResponses bool     // delete?
+	// Flags          map[string]*Flag
 }
 
 // experimental, arguments may change
@@ -62,6 +65,35 @@ func New(b *bot.Bot, s *discordgo.Session, msg *discordgo.Message, prefix string
 		Author:            msg.Author,
 		Prefix:            prefix,
 		RegisterResponses: true,
-		Commands:          []*command.Command{},
 	}, nil
+}
+
+// TODO: arg parser
+// TODO: flag parser
+func (ctx *Context) ParseContent(content string) error {
+	ctx.args = strings.Fields(content[len(ctx.Prefix):])
+
+	return nil
+}
+
+func (ctx *Context) Arg(index int) string {
+	// TODO: prevent segfault
+	return ctx.args[index]
+}
+
+func (ctx *Context) Args(begin, end int) string {
+	// TODO: prevent segfault
+	return strings.Join(ctx.args[begin:end], " ")
+}
+
+func (ctx *Context) Argc() int {
+	return len(ctx.args)
+}
+
+func (ctx *Context) ArgArray() []string {
+	args := make([]string, len(ctx.args))
+
+	copy(args, ctx.args)
+
+	return args
 }

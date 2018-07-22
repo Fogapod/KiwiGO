@@ -11,6 +11,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+//go:generate go run gencommands/main.go
+
 var (
 	log = logger.GetLogger()
 )
@@ -58,6 +60,8 @@ func main() {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
+
+	log.Trace("Exit code recieved")
 
 	bot.Stop(0, false)
 }
