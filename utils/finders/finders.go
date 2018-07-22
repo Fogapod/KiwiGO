@@ -34,10 +34,10 @@ func FindUser(pattern string, ctx *context.Context, options *FindUserOptions) []
 		}
 
 		var guilds []*discordgo.Guild
-		if options.StrictGuild {
-			guilds = append(guilds, ctx.Guild)
-		} else {
+		if !options.StrictGuild {
 			guilds = ctx.Session.State.Guilds
+		} else if ctx.Guild != nil { // not DM
+			guilds = append(guilds, ctx.Guild)
 		}
 
 		for _, guild := range guilds {
@@ -65,7 +65,7 @@ func FindUser(pattern string, ctx *context.Context, options *FindUserOptions) []
 	var guilds []*discordgo.Guild
 	if options.GlobalSearch {
 		guilds = ctx.Session.State.Guilds
-	} else {
+	} else if ctx.Guild != nil { // not DM
 		guilds = append(guilds, ctx.Guild)
 	}
 
