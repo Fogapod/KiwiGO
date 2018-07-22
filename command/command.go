@@ -33,23 +33,39 @@ type Command struct {
 	Disabled        bool
 	// events     ???
 	IsSubCommand bool
-	parents      []*Command
+	parent       *Command
 	children     map[string]*Command
 
 	CallFunc   func(*Command, *context.Context) (string, error)
 	HelpFunc   func(*Command, *context.Context) (string, error)
 	UnloadFUnc func(*Command) error
 
-	Bot *bot.Bot
+	Bot        *bot.Bot
+	CommandMap *map[string]*Command // TODO: pointer to habdler
 }
 
-func New(b *bot.Bot, name string) *Command {
+func New(b *bot.Bot, name string, commands *map[string]*Command) *Command {
 	return &Command{
 		Name:            name,
-		Bot:             b,
 		AllowedChatType: AllowedChatTypeAll,
 		children:        map[string]*Command{},
+		Bot:             b,
+		CommandMap:      commands,
 	}
+}
+
+func NewSubcommand(b *bot.Bot, name string, commands *map[string]*Command, parent *Command) *Command {
+	cmd := &Command{
+		Name:            name,
+		AllowedChatType: AllowedChatTypeAll,
+		IsSubCommand:    true,
+		parent:          parent,
+		children:        map[string]*Command{},
+		Bot:             b,
+		CommandMap:      commands,
+	}
+
+	return cmd
 }
 
 func (c *Command) Build() {
@@ -64,16 +80,18 @@ func (c *Command) Build() {
 	}
 
 	if c.CallFunc == nil {
-		c.CallFunc = CallDefault
+		c.CallFunc = DefaultCall
 	}
 
 	if c.HelpFunc == nil {
-		c.HelpFunc = HelpDefault
+		c.HelpFunc = DefaultHelp
 	}
 
 	if c.UnloadFUnc == nil {
-		c.UnloadFUnc = UnloadDefault
+		c.UnloadFUnc = DefaultUnload
 	}
+
+	// TODO: build subcommands
 }
 
 // Wrappers
@@ -92,17 +110,17 @@ func (c *Command) Unload() error {
 
 // Default funcs
 
-func CallDefault(c *Command, ctx *context.Context) (string, error) {
+func DefaultCall(c *Command, ctx *context.Context) (string, error) {
 	return "", nil
 }
 
-func HelpDefault(c *Command, ctx *context.Context) (string, error) {
+func DefaultHelp(c *Command, ctx *context.Context) (string, error) {
 	// TODO: complete formatting, add flag/aliases/local prefix support
 	// TODO: use embed
 	return ctx.Prefix + c.Name, nil
 }
 
-func UnloadDefault(c *Command) error {
+func DefaultUnload(c *Command) error {
 	return nil
 }
 

@@ -39,7 +39,7 @@ func (h *CommandHandler) LoadCommands(strictMode bool) {
 
   {{range . -}}
   log.Debug("Building {{.PartialPath}}")
-  cmd = command.New(h.Bot, "{{.Name}}")
+  cmd = command.New(h.Bot, "{{.Name}}", &h.CommandMap)
   err = {{.Name}}.Build(cmd)
   log.Trace("Success")
 

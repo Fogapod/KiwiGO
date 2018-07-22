@@ -13,5 +13,17 @@ func Build(base *command.Command) error {
 }
 
 func Call(c *command.Command, ctx *context.Context) (string, error) {
-	return "Commands: help, ping, uptime, user\nDefault preix:" + ctx.Bot.DefaultPrefixes[0], nil
+	// TODO: c.commandMap.Unique() ?
+	uniqueCOmmands := map[*command.Command]string{}
+	for alias, command := range *c.CommandMap {
+		uniqueCOmmands[command] = alias
+	}
+
+	commands := ""
+	for command, _ := range uniqueCOmmands {
+		commands += command.Name + " " // trailing space...
+	}
+
+	// very temporary solution, TODO
+	return "Commands: **" + commands + "**\nDefault prefix: **" + ctx.Bot.DefaultPrefixes[0] + "**", nil
 }

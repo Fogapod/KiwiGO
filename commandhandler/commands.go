@@ -25,7 +25,7 @@ func (h *CommandHandler) LoadCommands(strictMode bool) {
 	h.CommandMap = map[string]*command.Command{}
 
 	log.Debug("Building commands/utils/help/help_command.go")
-	cmd = command.New(h.Bot, "help")
+	cmd = command.New(h.Bot, "help", &h.CommandMap)
 	err = help.Build(cmd)
 	log.Trace("Success")
 
@@ -45,7 +45,7 @@ func (h *CommandHandler) LoadCommands(strictMode bool) {
 	}
 
 	log.Debug("Building commands/utils/ping/ping_command.go")
-	cmd = command.New(h.Bot, "ping")
+	cmd = command.New(h.Bot, "ping", &h.CommandMap)
 	err = ping.Build(cmd)
 	log.Trace("Success")
 
@@ -65,7 +65,7 @@ func (h *CommandHandler) LoadCommands(strictMode bool) {
 	}
 
 	log.Debug("Building commands/utils/uptime/uptime_command.go")
-	cmd = command.New(h.Bot, "uptime")
+	cmd = command.New(h.Bot, "uptime", &h.CommandMap)
 	err = uptime.Build(cmd)
 	log.Trace("Success")
 
@@ -85,7 +85,7 @@ func (h *CommandHandler) LoadCommands(strictMode bool) {
 	}
 
 	log.Debug("Building commands/utils/user/user_command.go")
-	cmd = command.New(h.Bot, "user")
+	cmd = command.New(h.Bot, "user", &h.CommandMap)
 	err = user.Build(cmd)
 	log.Trace("Success")
 
