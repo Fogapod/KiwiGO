@@ -10,7 +10,16 @@ while true; do
         break
     fi
 
-    go build -o bin/bot && bin/bot
+    go build -o bin/KiwiGO
+    exit_code=$?
+
+    if [ $exit_code != 0 ]
+    then
+        echo "[BASH SCRIPT] go build failed with exit code $exit_code"
+        break
+    fi
+
+    bin/KiwiGO
     exit_code=$?
 
     if [ $exit_code == 0 ] || [ $exit_code == 1 ]
