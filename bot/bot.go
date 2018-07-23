@@ -48,9 +48,7 @@ func (bot *Bot) GetLatsUserMessageTimestamp(channelID, userID string) time.Time 
 	return time.Unix(0, 0)
 }
 
-func (b *Bot) GetAllChannels() []*discordgo.Channel {
-	var channels []*discordgo.Channel
-
+func (b *Bot) GetAllChannels() (channels []*discordgo.Channel) {
 	for _, g := range b.Session.State.Guilds {
 		channels = append(channels, g.Channels...)
 	}
@@ -60,9 +58,7 @@ func (b *Bot) GetAllChannels() []*discordgo.Channel {
 	return channels
 }
 
-func (b *Bot) GetAllEmojis() []*discordgo.Emoji {
-	var emojis []*discordgo.Emoji
-
+func (b *Bot) GetAllEmojis() (emojis []*discordgo.Emoji) {
 	for _, g := range b.Session.State.Guilds {
 		emojis = append(emojis, g.Emojis...)
 	}
@@ -85,6 +81,7 @@ func (b *Bot) GetAllUsers() []*discordgo.User {
 	var i int
 	for _, u := range userMap {
 		users[i] = u
+		i++
 	}
 
 	return users
