@@ -6,6 +6,7 @@ import (
 	"github.com/Fogapod/KiwiGO/commands/utils/ping"
 	"github.com/Fogapod/KiwiGO/commands/utils/uptime"
 	"github.com/Fogapod/KiwiGO/commands/utils/user"
+	"github.com/Fogapod/KiwiGO/commands/utils/users"
 )
 
 //                                      //
@@ -91,6 +92,26 @@ func (h *CommandHandler) LoadCommands(strictMode bool) {
 
 	if err != nil {
 		log.Error("Failed to build command commands/utils/user/user_command.go:\n%s", err)
+
+		if strictMode {
+			log.Fatal("Strict mode is set for command loader, exiting")
+			h.Bot.Stop(1, true)
+		} else {
+			log.Debug("Strict mode not set, continuing")
+		}
+	} else {
+		for _, alias := range cmd.Aliases {
+			h.CommandMap[alias] = cmd
+		}
+	}
+
+	log.Debug("Building commands/utils/users/users_command.go")
+	cmd = command.New(h.Bot, "users", &h.CommandMap)
+	err = users.Build(cmd)
+	log.Trace("Success")
+
+	if err != nil {
+		log.Error("Failed to build command commands/utils/users/users_command.go:\n%s", err)
 
 		if strictMode {
 			log.Fatal("Strict mode is set for command loader, exiting")

@@ -1,6 +1,7 @@
 package finders
 
 import (
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -17,13 +18,13 @@ type FoundUser struct {
 }
 
 type FindUserOptions struct {
-	StrictGuild  bool
-	GlobalSearch bool
+	CurrentGuild  bool // disable global user lookup using id, search by name only current guild
+	GlobalSearch  bool // search by name through all guilds bot is in, can be very expensive
+	UseRegex      bool // match names using regex
+	CaseSensetive bool // use case-sesnetive comparison of user names
 }
 
-func FindUser(pattern string, ctx *context.Context, options *FindUserOptions) []*FoundUser {
-	var found []*FoundUser
-
+func FindUser(pattern string, ctx *context.Context, options *FindUserOptions) (found []*FoundUser, err error) {
 	mentionMatch := regexes.UserMentionOrID.FindStringSubmatch(pattern)
 	if len(mentionMatch) > 0 {
 		var userID string
@@ -34,36 +35,70 @@ func FindUser(pattern string, ctx *context.Context, options *FindUserOptions) []
 		}
 
 		var guilds []*discordgo.Guild
-		if !options.StrictGuild {
+		if !options.CurrentGuild {
 			guilds = ctx.Session.State.Guilds
 		} else if ctx.Guild != nil { // not DM
 			guilds = append(guilds, ctx.Guild)
 		}
 
+		// local cache id lookup
 		for _, guild := range guilds {
 			member, err := ctx.Session.State.Member(guild.ID, userID)
 			if err == nil {
 				return append(found, &FoundUser{
 					Member: member,
 					User:   member.User,
-				})
+				}), nil
 			}
 		}
 
-		if !options.StrictGuild {
+		// global id lookup
+		if !options.CurrentGuild {
 			user, err := ctx.Session.User(userID)
 			if err == nil {
 				return append(found, &FoundUser{
 					User: user,
-				})
+				}), nil
 			}
 		}
 	}
 
-	lowerPattern := strings.ToLower(pattern)
+	var nameCompareFunc func(n, p string) int
+
+	if options.UseRegex {
+		var regex *regexp.Regexp
+
+		if options.CaseSensetive {
+			regex, err = regexp.Compile(pattern)
+		} else {
+			regex, err = regexp.Compile(`(?i)` + pattern)
+		}
+		if err != nil {
+			return
+		}
+
+		nameCompareFunc = func(n, p string) int {
+			match := regex.FindStringIndex(n)
+			if match == nil {
+				return -1
+			}
+
+			return match[0]
+		}
+	} else {
+		if options.CaseSensetive {
+			nameCompareFunc = func(n, p string) int {
+				return strings.Index(n, p)
+			}
+		} else {
+			nameCompareFunc = func(n, p string) int {
+				return strings.Index(strings.ToLower(n), strings.ToLower(p))
+			}
+		}
+	}
 
 	var guilds []*discordgo.Guild
-	if options.GlobalSearch {
+	if options.GlobalSearch && !options.CurrentGuild {
 		guilds = ctx.Session.State.Guilds
 	} else if ctx.Guild != nil { // not DM
 		guilds = append(guilds, ctx.Guild)
@@ -74,11 +109,12 @@ func FindUser(pattern string, ctx *context.Context, options *FindUserOptions) []
 			matchIndex := -1
 
 			if options.GlobalSearch {
-				matchIndex = strings.Index(strings.ToLower(member.Nick), lowerPattern)
+				matchIndex = nameCompareFunc(member.Nick, pattern)
 			}
 			if matchIndex == -1 {
-				matchIndex = strings.Index(strings.ToLower(member.User.String()), lowerPattern)
+				matchIndex = nameCompareFunc(member.User.String(), pattern)
 			}
+
 			if matchIndex == -1 {
 				continue
 			}
@@ -118,5 +154,5 @@ func FindUser(pattern string, ctx *context.Context, options *FindUserOptions) []
 		}
 	}
 
-	return found
+	return
 }

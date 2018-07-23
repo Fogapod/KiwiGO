@@ -20,7 +20,11 @@ func Call(c *command.Command, ctx *context.Context) (string, error) {
 	if ctx.Argc() < 2 {
 		user = ctx.Message.Author
 	} else {
-		users := finders.FindUser(ctx.Args(1, ctx.Argc()), ctx, &finders.FindUserOptions{})
+		users, err := finders.FindUser(ctx.Args(1, ctx.Argc()), ctx, &finders.FindUserOptions{})
+		if err != nil {
+			return "", err
+		}
+
 		if len(users) == 0 {
 			return "User not found", nil
 		}

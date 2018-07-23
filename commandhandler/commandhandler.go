@@ -107,6 +107,7 @@ func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.Messag
 	response, err := cmd.Call(ctx)
 	if err != nil { // TODO: errors, error handler
 		log.Warn("Error running command %s:\n%s", cmd.Name, err)
+		ctx.Send(m.ChannelID, "Error occured running command **"+cmd.Name+"**. Developer was notified") // developer wasn't notified, TODO
 	}
 
 	if response != "" {

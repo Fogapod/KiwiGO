@@ -21,7 +21,7 @@ func Call(c *command.Command, ctx *context.Context) (string, error) {
 
 	commands := ""
 	for command, _ := range uniqueCOmmands {
-		commands += command.Name + " " // trailing space...
+		commands += command.Name + " " // trailing space ...
 	}
 
 	// very temporary solution, TODO
