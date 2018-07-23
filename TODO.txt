@@ -1,4 +1,3 @@
 - using docker to run bot
 - add rich README.md
-- make repository public
 - ignore generated code?
