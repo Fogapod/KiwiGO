@@ -41,6 +41,8 @@ func (h *CommandHandler) HandleReady(s *discordgo.Session, r *discordgo.Ready) {
 	log.Trace("Loading commands")
 	h.LoadCommands(true)
 
+	h.Bot.InitPrefixes(h.Bot.Config.Prefix)
+
 	log.Info("%s is ready to serve %d guilds", s.State.User, len(s.State.Guilds))
 
 	if len(h.Bot.DefaultPrefixes) == 0 {

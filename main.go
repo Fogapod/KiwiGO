@@ -7,6 +7,7 @@ import (
 
 	"github.com/Fogapod/KiwiGO/bot"
 	"github.com/Fogapod/KiwiGO/commandhandler"
+	"github.com/Fogapod/KiwiGO/config"
 	"github.com/Fogapod/KiwiGO/logger"
 	"github.com/bwmarrin/discordgo"
 )
@@ -25,13 +26,13 @@ func main() {
 
 	var err error
 
-	config, err := readConfig()
+	bot.Config, err = config.ReadConfig()
 	if err != nil {
 		log.Fatal("Failed to read config file, error:\n%s", err)
 		bot.Stop(1, true)
 	}
 
-	err = log.SetLoggingLevel(config.LoggingLevel)
+	err = log.SetLoggingLevel(bot.Config.LoggingLevel)
 	if err != nil {
 		log.Fatal("Failed to set logging level, error:\n%s", err)
 		bot.Stop(1, true)
@@ -39,23 +40,21 @@ func main() {
 
 	log.Info("Initializing bot")
 	log.Trace("Creating session")
-	bot.Session, err = discordgo.New("Bot " + config.Token)
+	bot.Session, err = discordgo.New("Bot " + bot.Config.Token)
 	if err != nil {
 		log.Fatal("Failed to create Discord session, error:\n%s", err)
 		bot.Stop(1, true)
 	}
 
+	log.Trace("Registering events")
 	bot.Session.AddHandlerOnce(handler.HandleReady)
+	bot.Session.AddHandler(handler.HandleMessage)
 
 	log.Trace("Openning connection")
 	if err = bot.Session.Open(); err != nil {
 		log.Fatal("Failed to open connection, error:\n%s", err)
 		bot.Stop(1, true)
 	}
-
-	bot.InitPrefixes(config.Prefix)
-	log.Trace("Registering events")
-	bot.Session.AddHandler(handler.HandleMessage)
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)

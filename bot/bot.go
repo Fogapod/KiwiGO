@@ -4,12 +4,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/Fogapod/KiwiGO/config"
 	"github.com/Fogapod/KiwiGO/logger"
 	"github.com/bwmarrin/discordgo"
 )
 
 type Bot struct {
 	Logger            *logger.Logger
+	Config            *config.Config
 	Session           *discordgo.Session
 	DefaultPrefixes   []string
 	GuildPrefixes     map[string]string                         // id:prefix

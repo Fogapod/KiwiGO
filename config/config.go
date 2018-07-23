@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"encoding/json"
@@ -11,16 +11,13 @@ type Config struct {
 	LoggingLevel string `json:"logging_level"`
 }
 
-func readConfig() (*Config, error) {
-	// Reads config file and updates it to match Config struct
-
-	var c Config
-
+// Reads config file and updates it to match Config struct
+func ReadConfig() (config *Config, err error) {
 	f, err := os.OpenFile("config.json", os.O_RDWR, 0666)
 	defer f.Close()
 
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	b := make([]byte, 1024)
@@ -29,19 +26,19 @@ func readConfig() (*Config, error) {
 	bytesRead, err = f.Read(b)
 
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	if err = json.Unmarshal(b[:bytesRead], &c); err != nil {
-		return nil, err
+	if err = json.Unmarshal(b[:bytesRead], &config); err != nil {
+		return
 	}
 
-	if b, err = json.MarshalIndent(c, "", "    "); err != nil {
-		return nil, err
+	if b, err = json.MarshalIndent(config, "", "    "); err != nil {
+		return
 	}
 
 	f.Seek(0, 0)
 	_, err = f.Write(b)
 
-	return &c, err
+	return
 }
