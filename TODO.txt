@@ -1,5 +1,7 @@
 - command: circle
 - password protected guilds functionality
+- redis db support
+- SQL db support (postgres?)
 - using docker to run bot
 - add rich README.md
 - ignore generated code?

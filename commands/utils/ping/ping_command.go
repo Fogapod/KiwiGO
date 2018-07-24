@@ -2,10 +2,10 @@ package ping
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/Fogapod/KiwiGO/command"
 	"github.com/Fogapod/KiwiGO/context"
+	"github.com/bwmarrin/discordgo"
 )
 
 // Build command
@@ -17,25 +17,33 @@ func Build(base *command.Command) error {
 }
 
 // Call command
-func Call(c *command.Command, ctx *context.Context) (string, error) {
+func Call(c *command.Command, ctx *context.Context) (response string, err error) {
 	pingMessage, err := ctx.Send(ctx.Message.ChannelID, "Pinging...")
 	if err != nil {
-		return "", err
+		return
 	}
 
-	id1, err := strconv.ParseInt(ctx.Message.ID, 10, 64)
+	// TODO: ping ip
+
+	var userMessageTimestamp discordgo.Timestamp
+	if ctx.Message.EditedTimestamp != "" {
+		userMessageTimestamp = ctx.Message.EditedTimestamp
+	} else {
+		userMessageTimestamp = ctx.Message.Timestamp
+	}
+
+	ts1, err := userMessageTimestamp.Parse()
 	if err != nil {
-		return "", err
+		return
 	}
 
-	id2, err := strconv.ParseInt(pingMessage.ID, 10, 64)
+	ts2, err := pingMessage.Timestamp.Parse()
 	if err != nil {
-		return "", err
+		return
 	}
 
-	delta := id2>>22 - id1>>22
-
+	delta := int(ts2.Sub(ts1).Seconds() * 1000)
 	ctx.Session.ChannelMessageEdit(ctx.Message.ChannelID, pingMessage.ID, fmt.Sprintf("Pong, it took **%dms** to respond", delta))
 
-	return "", nil
+	return
 }

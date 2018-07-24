@@ -49,6 +49,8 @@ func main() {
 	log.Trace("Registering events")
 	bot.Session.AddHandlerOnce(handler.HandleReady)
 	bot.Session.AddHandler(handler.HandleMessage)
+	bot.Session.AddHandler(handler.HandleMessageUpdate)
+	bot.Session.AddHandler(handler.HandleMessageDelete)
 
 	log.Trace("Openning connection")
 	if err = bot.Session.Open(); err != nil {

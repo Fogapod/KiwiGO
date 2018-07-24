@@ -120,3 +120,24 @@ func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.Messag
 		ctx.Send(m.ChannelID, response)
 	}
 }
+
+// Handles message update event
+func (h *CommandHandler) HandleMessageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
+	if m.Author.Bot {
+		return
+	}
+
+	/* Not implemented yet: https://github.com/bwmarrin/discordgo/pull/545
+	if m.Content == m.BeforeUpdate.Content {
+		return
+	}
+	*/
+
+	// TODO: delete bot's response
+	h.HandleMessage(s, &discordgo.MessageCreate{m.Message})
+}
+
+// Handles message delete event
+func (h *CommandHandler) HandleMessageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
+	// TODO: delete bot's response
+}
