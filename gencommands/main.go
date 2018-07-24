@@ -62,16 +62,18 @@ func (h *CommandHandler) LoadCommands(strictMode bool) {
 }
 `
 
-type Command struct {
+type command struct {
 	Name        string
 	ImportPath  string
 	PartialPath string
 }
 
-var Commands []Command
+const (
+	commandsDir = "commands"
+)
 
 func main() {
-	commandsDir := "commands"
+	var commands []command
 
 	err := filepath.Walk(commandsDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -86,7 +88,7 @@ func main() {
 			return nil
 		}
 
-		Commands = append(Commands, Command{
+		commands = append(commands, command{
 			Name:        strings.ToLower(info.Name()[:len(info.Name())-11]),
 			ImportPath:  filepath.Join("github.com", "Fogapod", "KiwiGO", path[:strings.LastIndex(path, string(os.PathSeparator))]),
 			PartialPath: path,
@@ -99,23 +101,20 @@ func main() {
 		panic(err)
 	}
 
-	/* TODO: add checks
-	for _, path := range commandPaths {
-	  data, err := ioutil.ReadFile(path)
-		if err != nil {
-			panic(err)
-		}
+	// TODO: add file content checks
 
-		filepath.Join("github.com", "Fogapod", "KiwiGO", path)
-	} */
-
-	sort.Slice(Commands, func(i, j int) bool {
-		return Commands[i].Name < Commands[j].Name
+	sort.Slice(commands, func(i, j int) bool {
+		return commands[i].Name < commands[j].Name
 	})
 
 	var generatedSource bytes.Buffer
 
-	err = template.Must(template.New("").Parse(fileTemplate)).Execute(&generatedSource, Commands)
+	err = template.Must(template.New("").Parse(fileTemplate)).Execute(&generatedSource, commands)
+
+	if err != nil {
+		fmt.Println("Failed to execute file template:", err)
+		return
+	}
 
 	formattedSource, err := format.Source(generatedSource.Bytes())
 

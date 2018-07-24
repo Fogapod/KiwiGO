@@ -10,6 +10,7 @@ import (
 
 var startTime = time.Now()
 
+// Build command
 func Build(base *command.Command) error {
 	base.CallFunc = Call
 	base.Aliases = append(base.Aliases, "up")
@@ -18,6 +19,7 @@ func Build(base *command.Command) error {
 	return nil
 }
 
+// Call command
 func Call(c *command.Command, ctx *context.Context) (string, error) {
 	deltaSEconds := int(time.Now().Sub(startTime).Seconds())
 	divmod := func(numerator, denominator int) (quotient, remainder int) {

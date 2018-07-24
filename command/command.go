@@ -15,6 +15,7 @@ const (
 	AllowedChatTypeDMOnly
 )
 
+// Represents bot command
 type Command struct {
 	UsageDoc string
 	ShortDoc string
@@ -44,6 +45,7 @@ type Command struct {
 	CommandMap *map[string]*Command // TODO: pointer to habdler
 }
 
+// Returns new command with most important fields filled
 func New(b *bot.Bot, name string, commands *map[string]*Command) *Command {
 	return &Command{
 		Name:            name,
@@ -54,6 +56,7 @@ func New(b *bot.Bot, name string, commands *map[string]*Command) *Command {
 	}
 }
 
+// Returns new subcommand with most important fields filled
 func NewSubcommand(b *bot.Bot, name string, commands *map[string]*Command, parent *Command) *Command {
 	cmd := &Command{
 		Name:            name,
@@ -68,6 +71,7 @@ func NewSubcommand(b *bot.Bot, name string, commands *map[string]*Command, paren
 	return cmd
 }
 
+// Builds command
 func (c *Command) Build() {
 	if c.ShortDoc == "" {
 		c.UsageDoc = "{prefix}" + c.Name

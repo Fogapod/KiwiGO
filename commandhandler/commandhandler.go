@@ -14,12 +14,14 @@ var (
 	log = logger.GetLogger()
 )
 
+// Handler of commands
 type CommandHandler struct {
 	Bot        *bot.Bot
 	CommandMap map[string]*command.Command
 }
 
-func NewCommandHandler(b *bot.Bot) CommandHandler {
+// Returns new CommandHandler
+func New(b *bot.Bot) CommandHandler {
 	return CommandHandler{b, map[string]*command.Command{}}
 }
 
@@ -37,6 +39,7 @@ func (h *CommandHandler) getPrefix(content string) string {
 	return ""
 }
 
+// Handles ready event
 func (h *CommandHandler) HandleReady(s *discordgo.Session, r *discordgo.Ready) {
 	log.Trace("Loading commands")
 	h.LoadCommands(true)
@@ -52,6 +55,7 @@ func (h *CommandHandler) HandleReady(s *discordgo.Session, r *discordgo.Ready) {
 	}
 }
 
+// Handles new message event
 func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	h.Bot.RegisterMessageTimestamp(m.Message)
 
@@ -109,7 +113,7 @@ func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.Messag
 	response, err := cmd.Call(ctx)
 	if err != nil { // TODO: errors, error handler
 		log.Warn("Error running command %s:\n%s", cmd.Name, err)
-		ctx.Send(m.ChannelID, "Error occured running command **"+cmd.Name+"**. Developer was notified") // developer wasn't notified, TODO
+		ctx.Send(m.ChannelID, "Error occurred running command **"+cmd.Name+"**. Developer was notified") // developer wasn't notified, TODO
 	}
 
 	if response != "" {

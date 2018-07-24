@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// Contains values read from config
 type Config struct {
 	Token        string `json:"token"`
 	Prefix       string `json:"prefix"`

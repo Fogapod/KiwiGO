@@ -22,7 +22,7 @@ func main() {
 	bot := bot.New()
 	bot.Logger = log
 
-	handler := commandhandler.NewCommandHandler(bot)
+	handler := commandhandler.New(bot)
 
 	var err error
 
@@ -60,7 +60,7 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
 
-	log.Trace("Exit code recieved")
+	log.Trace("Exit code received")
 
 	bot.Stop(0, false)
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// Build command
 func Build(base *command.Command) error {
 	base.CallFunc = Call
 	base.Build()
@@ -14,6 +15,7 @@ func Build(base *command.Command) error {
 	return nil
 }
 
+// Call command
 func Call(c *command.Command, ctx *context.Context) (string, error) {
 	var user *discordgo.User
 

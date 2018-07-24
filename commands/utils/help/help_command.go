@@ -5,6 +5,7 @@ import (
 	"github.com/Fogapod/KiwiGO/context"
 )
 
+// Build command
 func Build(base *command.Command) error {
 	base.CallFunc = Call
 	base.Build()
@@ -12,6 +13,7 @@ func Build(base *command.Command) error {
 	return nil
 }
 
+// Call command
 func Call(c *command.Command, ctx *context.Context) (string, error) {
 	// TODO: c.commandMap.Unique() ?
 	uniqueCOmmands := map[*command.Command]string{}
@@ -20,7 +22,7 @@ func Call(c *command.Command, ctx *context.Context) (string, error) {
 	}
 
 	commands := ""
-	for command, _ := range uniqueCOmmands {
+	for command := range uniqueCOmmands {
 		commands += command.Name + " " // trailing space ...
 	}
 

@@ -9,6 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// Main bot struct
 type Bot struct {
 	Logger            *logger.Logger
 	Config            *config.Config
@@ -18,6 +19,7 @@ type Bot struct {
 	MessageTimestamps map[string]map[string]discordgo.Timestamp // channelID: userID: timestmp
 }
 
+// Returns new Bot instance
 func New() *Bot {
 	return &Bot{
 		GuildPrefixes:     make(map[string]string),
@@ -25,10 +27,13 @@ func New() *Bot {
 	}
 }
 
+//
 func (bot *Bot) InitPrefixes(defaultPrefix string) {
 	bot.DefaultPrefixes = append(bot.DefaultPrefixes, defaultPrefix, "<@"+bot.Session.State.User.ID+">", "<@!"+bot.Session.State.User.ID+">")
 }
 
+// Registers timestamp of last user's message
+// TODO: fix data race?
 func (bot *Bot) RegisterMessageTimestamp(m *discordgo.Message) {
 	if _, ok := bot.MessageTimestamps[m.ChannelID]; !ok {
 		bot.MessageTimestamps[m.ChannelID] = map[string]discordgo.Timestamp{m.Author.ID: m.Timestamp}
@@ -37,6 +42,8 @@ func (bot *Bot) RegisterMessageTimestamp(m *discordgo.Message) {
 	}
 }
 
+// Gets timestamp of last user's message
+// TODO: fix data race?
 func (bot *Bot) GetLatsUserMessageTimestamp(channelID, userID string) time.Time {
 	channel, ok := bot.MessageTimestamps[channelID]
 	if ok {
@@ -50,6 +57,7 @@ func (bot *Bot) GetLatsUserMessageTimestamp(channelID, userID string) time.Time 
 	return time.Unix(0, 0)
 }
 
+// Returns all cached channels
 func (b *Bot) GetAllChannels() (channels []*discordgo.Channel) {
 	for _, g := range b.Session.State.Guilds {
 		channels = append(channels, g.Channels...)
@@ -60,6 +68,7 @@ func (b *Bot) GetAllChannels() (channels []*discordgo.Channel) {
 	return channels
 }
 
+// Returns all cached emojis
 func (b *Bot) GetAllEmojis() (emojis []*discordgo.Emoji) {
 	for _, g := range b.Session.State.Guilds {
 		emojis = append(emojis, g.Emojis...)
@@ -68,6 +77,7 @@ func (b *Bot) GetAllEmojis() (emojis []*discordgo.Emoji) {
 	return emojis
 }
 
+// Returns all cached users
 func (b *Bot) GetAllUsers() []*discordgo.User {
 	// use map to avoid duplicates
 	userMap := make(map[string]*discordgo.User)
@@ -89,6 +99,7 @@ func (b *Bot) GetAllUsers() []*discordgo.User {
 	return users
 }
 
+// Stops bot
 func (bot *Bot) Stop(exitCode int, forceStop bool) {
 	bot.Logger.Info("Closing connection and exiting with code %d", exitCode)
 
