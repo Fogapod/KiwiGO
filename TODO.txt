@@ -1,3 +1,5 @@
+- command: circle
+- password protected guilds functionality
 - using docker to run bot
 - add rich README.md
 - ignore generated code?
