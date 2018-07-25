@@ -123,6 +123,13 @@ func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.Messag
 
 // Handles message update event
 func (h *CommandHandler) HandleMessageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
+	// Temporary until previous message could be reached: https://github.com/bwmarrin/discordgo/pull/545
+	fetchedMessage, err := s.ChannelMessage(m.ChannelID, m.ID)
+	if err != nil {
+		return
+	}
+
+	m.Author = fetchedMessage.Author
 	if m.Author.Bot {
 		return
 	}
