@@ -10,6 +10,8 @@ import (
 
 // Build command
 func Build(base *command.Command) error {
+	base.UsageDoc = "{prefix}{aliases} [domain]"
+	base.ShortDoc = "Ping ip / check bot's response delay"
 	base.CallFunc = Call
 	base.Build()
 
@@ -18,7 +20,7 @@ func Build(base *command.Command) error {
 
 // Call command
 func Call(c *command.Command, ctx *context.Context) (response string, err error) {
-	pingMessage, err := ctx.Send(ctx.Message.ChannelID, "Pinging...")
+	pingMessage, err := ctx.Send("Pinging...")
 	if err != nil {
 		return
 	}

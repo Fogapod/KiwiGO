@@ -9,6 +9,8 @@ import (
 
 // Build command
 func Build(base *command.Command) error {
+	base.UsageDoc = "{prefix}{aliases} [user]"
+	base.ShortDoc = "Get information about matched user. Defaults to you"
 	base.CallFunc = Call
 	base.Build()
 

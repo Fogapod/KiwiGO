@@ -23,14 +23,23 @@ type Context struct {
 
 // experimental, arguments may change
 // TODO: ChannelMessageSendComplex implementation
-func (ctx *Context) Send(channelID, content string) (*discordgo.Message, error) {
+// Wrapper for ChannelMessageSend
+func (ctx *Context) Send(content string) (*discordgo.Message, error) {
+
+	return ctx.SendComplex(&discordgo.MessageSend{Content: content})
+}
+
+// Wrapper for ChannelMessageSendComplex
+func (ctx *Context) SendComplex(data *discordgo.MessageSend) (*discordgo.Message, error) {
 	if ctx.RegisterResponses {
 		// register with redis
 	}
-	return ctx.Bot.Session.ChannelMessageSend(channelID, content)
+
+	return ctx.Bot.Session.ChannelMessageSendComplex(ctx.Channel.ID, data)
 }
 
 // experimental, arguments may change
+// Reacts with emoji to given message
 func (ctx *Context) React(emoji string) (*discordgo.MessageReaction, error) {
 	if ctx.RegisterResponses {
 		// register with redis
@@ -39,6 +48,7 @@ func (ctx *Context) React(emoji string) (*discordgo.MessageReaction, error) {
 	return nil, nil
 }
 
+// Returns new Context object
 func New(b *bot.Bot, s *discordgo.Session, msg *discordgo.Message, prefix string) (*Context, error) {
 	channel, err := b.Session.State.Channel(msg.ChannelID)
 	if err != nil {
@@ -56,6 +66,7 @@ func New(b *bot.Bot, s *discordgo.Session, msg *discordgo.Message, prefix string
 		}
 	}
 
+	// Represents message context
 	return &Context{
 		Bot:               b,
 		Session:           s,

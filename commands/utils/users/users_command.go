@@ -8,6 +8,8 @@ import (
 
 // Build command
 func Build(base *command.Command) error {
+	base.UsageDoc = "{prefix}{aliases} <pattern>"
+	base.ShortDoc = "Show list of users matching given pattern"
 	base.CallFunc = Call
 	base.Build()
 

@@ -12,6 +12,7 @@ var startTime = time.Now()
 
 // Build command
 func Build(base *command.Command) error {
+	base.ShortDoc = "Show how long bot is running for"
 	base.CallFunc = Call
 	base.Aliases = append(base.Aliases, "up")
 	base.Build()

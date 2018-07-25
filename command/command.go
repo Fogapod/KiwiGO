@@ -1,6 +1,8 @@
 package command
 
 import (
+	"strings"
+
 	"github.com/Fogapod/KiwiGO/bot"
 	"github.com/Fogapod/KiwiGO/context"
 )
@@ -73,8 +75,8 @@ func NewSubcommand(b *bot.Bot, name string, commands *map[string]*Command, paren
 
 // Builds command
 func (c *Command) Build() {
-	if c.ShortDoc == "" {
-		c.UsageDoc = "{prefix}" + c.Name
+	if c.UsageDoc == "" {
+		c.UsageDoc = "{prefix}{aliases}"
 	}
 
 	c.Aliases = append(c.Aliases, c.Name)
@@ -119,9 +121,30 @@ func DefaultCall(c *Command, ctx *context.Context) (string, error) {
 }
 
 func DefaultHelp(c *Command, ctx *context.Context) (string, error) {
-	// TODO: complete formatting, add flag/aliases/local prefix support
+	// TODO: complete formatting, add flag/local prefix support
 	// TODO: use embed
-	return ctx.Prefix + c.Name, nil
+	var response, aliases string
+
+	if len(c.Aliases) > 1 {
+		aliases = "[" + strings.Join(c.Aliases, "|") + "]"
+	} else {
+		aliases = c.Name
+	}
+
+	if c.UsageDoc != "" {
+		response += c.UsageDoc + "\n\n"
+	}
+	if c.ShortDoc != "" {
+		response += c.ShortDoc + "\n\n"
+	}
+	if c.LongDoc != "" {
+		response += c.LongDoc
+	}
+
+	response = strings.Replace(response, "{prefix}", ctx.Prefix, -1)
+	response = strings.Replace(response, "{aliases}", aliases, -1)
+
+	return "```\n" + response + "```", nil
 }
 
 func DefaultUnload(c *Command) error {

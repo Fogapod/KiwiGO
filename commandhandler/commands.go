@@ -2,6 +2,7 @@ package commandhandler
 
 import (
 	"github.com/Fogapod/KiwiGO/command"
+	"github.com/Fogapod/KiwiGO/commands/utils/avatar"
 	"github.com/Fogapod/KiwiGO/commands/utils/help"
 	"github.com/Fogapod/KiwiGO/commands/utils/ping"
 	"github.com/Fogapod/KiwiGO/commands/utils/uptime"
@@ -24,6 +25,26 @@ func (h *CommandHandler) LoadCommands(strictMode bool) {
 
 	// vanish existing commands
 	h.CommandMap = map[string]*command.Command{}
+
+	log.Debug("Building commands/utils/avatar/avatar_command.go")
+	cmd = command.New(h.Bot, "avatar", &h.CommandMap)
+	err = avatar.Build(cmd)
+	log.Trace("Success")
+
+	if err != nil {
+		log.Error("Failed to build command commands/utils/avatar/avatar_command.go:\n%s", err)
+
+		if strictMode {
+			log.Fatal("Strict mode is set for command loader, exiting")
+			h.Bot.Stop(1, true)
+		} else {
+			log.Debug("Strict mode not set, continuing")
+		}
+	} else {
+		for _, alias := range cmd.Aliases {
+			h.CommandMap[alias] = cmd
+		}
+	}
 
 	log.Debug("Building commands/utils/help/help_command.go")
 	cmd = command.New(h.Bot, "help", &h.CommandMap)
