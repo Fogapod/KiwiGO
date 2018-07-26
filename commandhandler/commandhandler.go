@@ -18,7 +18,7 @@ type CommandHandler struct {
 	CommandMap map[string]*command.Command
 }
 
-// Returns new CommandHandler
+// New returns new CommandHandler
 func New(b *bot.Bot) CommandHandler {
 	return CommandHandler{b, map[string]*command.Command{}}
 }

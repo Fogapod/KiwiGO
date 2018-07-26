@@ -5,7 +5,7 @@ import (
 	"github.com/Fogapod/KiwiGO/context"
 )
 
-// Build command
+// Build builds command
 func Build(base *command.Command) error {
 	base.UsageDoc = "{prefix}{aliases} [command]"
 	base.ShortDoc = "Get info about given command or list of all commands"
@@ -15,7 +15,7 @@ func Build(base *command.Command) error {
 	return nil
 }
 
-// Call command
+// Call calls command
 func Call(c *command.Command, ctx *context.Context) (string, error) {
 	// TODO: c.commandMap.Unique() ?
 	uniqueCOmmands := map[*command.Command]string{}

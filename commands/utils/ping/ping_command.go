@@ -8,9 +8,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// Build command
+// Build builds command
 func Build(base *command.Command) error {
-	base.UsageDoc = "{prefix}{aliases} [domain]"
+	base.UsageDoc = "{prefix}{aliases} [target]"
 	base.ShortDoc = "Ping ip / check bot's response delay"
 	base.CallFunc = Call
 	base.Build()
@@ -18,7 +18,7 @@ func Build(base *command.Command) error {
 	return nil
 }
 
-// Call command
+// Call calls command
 func Call(c *command.Command, ctx *context.Context) (response string, err error) {
 	pingMessage, err := ctx.Send("Pinging...")
 	if err != nil {

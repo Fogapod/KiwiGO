@@ -26,7 +26,7 @@ import (
 // Do not modify                        //
 //                                      //
 
-// Builds commands and links aliases with command pointers
+// LoadCommands builds commands and links aliases with command pointers
 // in CommandHandler.CommandMap
 func (h *CommandHandler) LoadCommands(strictMode bool) {
   var (

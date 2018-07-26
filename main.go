@@ -47,7 +47,8 @@ func main() {
 	}
 
 	log.Trace("Registering events")
-	bot.Session.AddHandlerOnce(handler.HandleReady)
+	bot.Session.AddHandler(handler.HandleReady)
+	bot.Session.AddHandler(handler.HandleResumed)
 	bot.Session.AddHandler(handler.HandleMessage)
 	bot.Session.AddHandler(handler.HandleMessageUpdate)
 	bot.Session.AddHandler(handler.HandleMessageDelete)

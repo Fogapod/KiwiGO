@@ -6,7 +6,7 @@ import (
 	"github.com/Fogapod/KiwiGO/utils/finders"
 )
 
-// Build command
+// Build builds command
 func Build(base *command.Command) error {
 	base.UsageDoc = "{prefix}{aliases} <pattern>"
 	base.ShortDoc = "Show list of users matching given pattern"
@@ -16,7 +16,7 @@ func Build(base *command.Command) error {
 	return nil
 }
 
-// Call command
+// Call calls command
 func Call(c *command.Command, ctx *context.Context) (string, error) {
 	if ctx.Argc() < 2 {
 		return "Not enough arguments", nil

@@ -11,7 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// Build command
+// Build builds command
 func Build(base *command.Command) error {
 	base.UsageDoc = "{prefix}{aliases} [user]"
 	base.ShortDoc = "Get user's avatar. Defaults to you"
@@ -22,7 +22,7 @@ func Build(base *command.Command) error {
 	return nil
 }
 
-// Call command
+// Call calls command
 func Call(c *command.Command, ctx *context.Context) (string, error) {
 	var user *discordgo.User
 

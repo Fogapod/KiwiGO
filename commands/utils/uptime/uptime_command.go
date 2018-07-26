@@ -10,7 +10,7 @@ import (
 
 var startTime = time.Now()
 
-// Build command
+// Build builds command
 func Build(base *command.Command) error {
 	base.ShortDoc = "Show how long bot is running for"
 	base.CallFunc = Call
@@ -20,7 +20,7 @@ func Build(base *command.Command) error {
 	return nil
 }
 
-// Call command
+// Call calls command
 func Call(c *command.Command, ctx *context.Context) (string, error) {
 	deltaSEconds := int(time.Now().Sub(startTime).Seconds())
 	divmod := func(numerator, denominator int) (quotient, remainder int) {
