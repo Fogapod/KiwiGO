@@ -2,10 +2,12 @@ package ping
 
 import (
 	"fmt"
+	"os/exec"
 
 	"github.com/Fogapod/KiwiGO/command"
 	"github.com/Fogapod/KiwiGO/context"
 	"github.com/bwmarrin/discordgo"
+	"golang.org/x/net/idna"
 )
 
 // Build builds command
@@ -19,13 +21,26 @@ func Build(base *command.Command) error {
 }
 
 // Call calls command
-func Call(c *command.Command, ctx *context.Context) (response string, err error) {
+func Call(c *command.Command, ctx *context.Context) (string, error) {
 	pingMessage, err := ctx.Send("Pinging...")
 	if err != nil {
-		return
+		return "", err
 	}
 
-	// TODO: ping ip
+	var pingTarget string
+
+	if ctx.Argc() > 1 {
+		pingTarget = ctx.Args(1, ctx.Argc())
+		encoded, err := idna.ToASCII(pingTarget)
+		if err == nil {
+			cmd := exec.Command("ping", encoded, "-c", "3")
+			ret, err := cmd.CombinedOutput()
+			if err == nil {
+				ctx.Edit(pingMessage.ID, "```\n"+string(ret)+"```")
+				return "", nil
+			}
+		}
+	}
 
 	var userMessageTimestamp discordgo.Timestamp
 	if ctx.Message.EditedTimestamp != "" {
@@ -36,16 +51,23 @@ func Call(c *command.Command, ctx *context.Context) (response string, err error)
 
 	ts1, err := userMessageTimestamp.Parse()
 	if err != nil {
-		return
+		return "", err
 	}
 
 	ts2, err := pingMessage.Timestamp.Parse()
 	if err != nil {
-		return
+		return "", err
+	}
+
+	response := "Pong, it took **%dms** to "
+	if pingTarget == "" {
+		response += "respond"
+	} else {
+		response += "ping **" + pingTarget + "**"
 	}
 
 	delta := int(ts2.Sub(ts1).Seconds() * 1000)
-	ctx.Session.ChannelMessageEdit(ctx.Message.ChannelID, pingMessage.ID, fmt.Sprintf("Pong, it took **%dms** to respond", delta))
+	ctx.Edit(pingMessage.ID, fmt.Sprintf(response, delta))
 
-	return
+	return "", nil
 }

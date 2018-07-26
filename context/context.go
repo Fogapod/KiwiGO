@@ -1,12 +1,15 @@
 package context
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/Fogapod/KiwiGO/bot"
+	"github.com/Fogapod/KiwiGO/utils/formatters"
 	"github.com/bwmarrin/discordgo"
 )
 
+// Context represents context object
 type Context struct {
 	Bot               *bot.Bot
 	Session           *discordgo.Session
@@ -23,23 +26,45 @@ type Context struct {
 
 // experimental, arguments may change
 // TODO: ChannelMessageSendComplex implementation
-// Wrapper for ChannelMessageSend
+// Send is a wrapper for ChannelMessageSend
 func (ctx *Context) Send(content string) (*discordgo.Message, error) {
 
 	return ctx.SendComplex(&discordgo.MessageSend{Content: content})
 }
 
-// Wrapper for ChannelMessageSendComplex
+// SendComplex is a wrapper for ChannelMessageSendComplex
 func (ctx *Context) SendComplex(data *discordgo.MessageSend) (*discordgo.Message, error) {
 	if ctx.RegisterResponses {
 		// register with redis
 	}
 
+	data.Content = *formatters.ReplaceMassMentions(&data.Content)
+
 	return ctx.Bot.Session.ChannelMessageSendComplex(ctx.Channel.ID, data)
 }
 
+// Edit is a wrapper for ChannelMessageEdit
+func (ctx *Context) Edit(messageID, content string) (*discordgo.Message, error) {
+	return ctx.EditComplex(&discordgo.MessageEdit{
+		Channel: ctx.Channel.ID,
+		ID:      messageID,
+		Content: &content,
+	})
+}
+
+// EditComplex is a wrapper for ChannelMessageEdit
+func (ctx *Context) EditComplex(data *discordgo.MessageEdit) (*discordgo.Message, error) {
+	if data.Content != nil {
+		data.Content = formatters.ReplaceMassMentions(data.Content)
+	}
+
+	fmt.Println(*data.Content)
+
+	return ctx.Bot.Session.ChannelMessageEditComplex(data)
+}
+
 // experimental, arguments may change
-// Reacts with emoji to given message
+// React reacts with emoji to given message
 func (ctx *Context) React(emoji string) (*discordgo.MessageReaction, error) {
 	if ctx.RegisterResponses {
 		// register with redis
@@ -48,7 +73,7 @@ func (ctx *Context) React(emoji string) (*discordgo.MessageReaction, error) {
 	return nil, nil
 }
 
-// Returns new Context object
+// New returns new Context object
 func New(b *bot.Bot, s *discordgo.Session, msg *discordgo.Message, prefix string) (*Context, error) {
 	channel, err := b.Session.State.Channel(msg.ChannelID)
 	if err != nil {
@@ -66,7 +91,6 @@ func New(b *bot.Bot, s *discordgo.Session, msg *discordgo.Message, prefix string
 		}
 	}
 
-	// Represents message context
 	return &Context{
 		Bot:               b,
 		Session:           s,
