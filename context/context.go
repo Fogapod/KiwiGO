@@ -1,7 +1,6 @@
 package context
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/Fogapod/KiwiGO/bot"
@@ -57,8 +56,6 @@ func (ctx *Context) EditComplex(data *discordgo.MessageEdit) (*discordgo.Message
 	if data.Content != nil {
 		data.Content = formatters.ReplaceMassMentions(data.Content)
 	}
-
-	fmt.Println(*data.Content)
 
 	return ctx.Bot.Session.ChannelMessageEditComplex(data)
 }
