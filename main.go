@@ -6,8 +6,8 @@ import (
 	"syscall"
 
 	"github.com/Fogapod/KiwiGO/bot"
-	"github.com/Fogapod/KiwiGO/commandhandler"
 	"github.com/Fogapod/KiwiGO/config"
+	"github.com/Fogapod/KiwiGO/handler"
 	"github.com/Fogapod/KiwiGO/logger"
 	"github.com/bwmarrin/discordgo"
 )
@@ -22,7 +22,7 @@ func main() {
 	bot := bot.New()
 	bot.Logger = log
 
-	handler := commandhandler.New(bot)
+	cmdHandler := handler.New(bot)
 
 	var err error
 
@@ -47,11 +47,11 @@ func main() {
 	}
 
 	log.Trace("Registering events")
-	bot.Session.AddHandler(handler.HandleReady)
-	bot.Session.AddHandler(handler.HandleResumed)
-	bot.Session.AddHandler(handler.HandleMessage)
-	bot.Session.AddHandler(handler.HandleMessageUpdate)
-	bot.Session.AddHandler(handler.HandleMessageDelete)
+	bot.Session.AddHandler(cmdHandler.HandleReady)
+	bot.Session.AddHandler(cmdHandler.HandleResumed)
+	bot.Session.AddHandler(cmdHandler.HandleMessage)
+	bot.Session.AddHandler(cmdHandler.HandleMessageUpdate)
+	bot.Session.AddHandler(cmdHandler.HandleMessageDelete)
 
 	log.Trace("Openning connection")
 	if err = bot.Session.Open(); err != nil {

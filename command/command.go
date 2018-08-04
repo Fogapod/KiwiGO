@@ -17,7 +17,7 @@ const (
 	AllowedChatTypeDMOnly
 )
 
-// Represents bot command
+// Command represents bot command
 type Command struct {
 	UsageDoc string
 	ShortDoc string

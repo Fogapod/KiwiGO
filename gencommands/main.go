@@ -12,7 +12,7 @@ import (
 	"text/template"
 )
 
-var fileTemplate = `package commandhandler
+var fileTemplate = `package handler
 
 import (
   "github.com/Fogapod/KiwiGO/command"
@@ -28,7 +28,7 @@ import (
 
 // LoadCommands builds commands and links aliases with command pointers
 // in CommandHandler.CommandMap
-func (h *CommandHandler) LoadCommands(strictMode bool) {
+func (h *Handler) LoadCommands(strictMode bool) {
   var (
     cmd *command.Command
     err error
@@ -123,7 +123,7 @@ func main() {
 		return
 	}
 
-	err = ioutil.WriteFile(filepath.Join("commandhandler", "commands.go"), formattedSource, 0666)
+	err = ioutil.WriteFile(filepath.Join("handler", "commands.go"), formattedSource, 0666)
 	if err != nil {
 		fmt.Println("Failed to write file:", err)
 		return

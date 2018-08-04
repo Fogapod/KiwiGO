@@ -1,4 +1,4 @@
-package commandhandler
+package handler
 
 import (
 	"strings"
@@ -8,7 +8,13 @@ import (
 )
 
 // HandleReady handles ready event
-func (h *CommandHandler) HandleReady(s *discordgo.Session, r *discordgo.Ready) {
+func (h *Handler) HandleReady(s *discordgo.Session, r *discordgo.Ready) {
+	if h.isFirstReadyEvent {
+		h.isFirstReadyEvent = false
+	} else {
+		return
+	}
+
 	log.Trace("Loading commands")
 	h.LoadCommands(true)
 
@@ -18,18 +24,18 @@ func (h *CommandHandler) HandleReady(s *discordgo.Session, r *discordgo.Ready) {
 
 	log.Info("Default prefix: %s", h.Bot.DefaultPrefixes[0])
 
-	s.UpdateStatus(0, "Get some help: "+h.Bot.DefaultPrefixes[0]+"help")
+	s.UpdateStatus(0, "Go get some help: "+h.Bot.DefaultPrefixes[0]+"help")
 }
 
 // HandleResumed handles discord REsumed event
-func (h *CommandHandler) HandleResumed(s *discordgo.Session, r *discordgo.Resumed) {
+func (h *Handler) HandleResumed(s *discordgo.Session, r *discordgo.Resumed) {
 	log.Info("Bot reconnected")
 
-	s.UpdateStatus(0, "Get some help: "+h.Bot.DefaultPrefixes[0]+"help")
+	s.UpdateStatus(0, "Go get some help: "+h.Bot.DefaultPrefixes[0]+"help")
 }
 
 // HandleMessage handles new message event
-func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
+func (h *Handler) HandleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	h.Bot.RegisterMessageTimestamp(m.Message)
 
 	if m.Author.Bot {
@@ -95,7 +101,7 @@ func (h *CommandHandler) HandleMessage(s *discordgo.Session, m *discordgo.Messag
 }
 
 // Handles message update event
-func (h *CommandHandler) HandleMessageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
+func (h *Handler) HandleMessageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
 	// Temporary until previous message could be reached: https://github.com/bwmarrin/discordgo/pull/545
 	fetchedMessage, err := s.ChannelMessage(m.ChannelID, m.ID)
 	if err != nil {
@@ -118,6 +124,6 @@ func (h *CommandHandler) HandleMessageUpdate(s *discordgo.Session, m *discordgo.
 }
 
 // HandleMessageDelete handles message delete event
-func (h *CommandHandler) HandleMessageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
+func (h *Handler) HandleMessageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
 	// TODO: delete bot's response
 }

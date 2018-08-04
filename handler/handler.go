@@ -1,4 +1,4 @@
-package commandhandler
+package handler
 
 import (
 	"strings"
@@ -13,17 +13,22 @@ var (
 )
 
 // Handler of commands
-type CommandHandler struct {
-	Bot        *bot.Bot
-	CommandMap map[string]*command.Command
+type Handler struct {
+	Bot               *bot.Bot
+	CommandMap        map[string]*command.Command
+	isFirstReadyEvent bool
 }
 
 // New returns new CommandHandler
-func New(b *bot.Bot) CommandHandler {
-	return CommandHandler{b, map[string]*command.Command{}}
+func New(b *bot.Bot) Handler {
+	return Handler{
+		Bot:               b,
+		CommandMap:        map[string]*command.Command{},
+		isFirstReadyEvent: true,
+	}
 }
 
-func (h *CommandHandler) getPrefix(content string) string {
+func (h *Handler) getPrefix(content string) string {
 	// TODO: guild prefix override
 
 	lowerContent := strings.ToLower(content)

@@ -1,4 +1,4 @@
-package commandhandler
+package handler
 
 import (
 	"github.com/Fogapod/KiwiGO/command"
@@ -17,7 +17,7 @@ import (
 
 // LoadCommands builds commands and links aliases with command pointers
 // in CommandHandler.CommandMap
-func (h *CommandHandler) LoadCommands(strictMode bool) {
+func (h *Handler) LoadCommands(strictMode bool) {
 	var (
 		cmd *command.Command
 		err error
